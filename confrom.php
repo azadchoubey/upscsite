@@ -9,62 +9,15 @@ $emailid=$_SESSION["emailField"];
 
 $msg=false;
 $addmsg=false;
-if ($_SERVER['REQUEST_METHOD'] == 'POST') 
-{
-      $name= $_POST['uname'];
-      $gender=$_POST['gender'];
-      $date=$_POST['date'];
-      $fname=$_POST['fname'];
-      $mname=$_POST['mname'];
-      $Marital=$_POST['Marital'];
-      $physically=$_POST['Physically'];
-      $community=$_POST['Community'];
-      $qualification=$_POST['Qualification'];
-        $addline1=$_POST['line1'];
-        $addline2=$_POST['line2'];
-        $addline3=$_POST['line3'];
-        $city=$_POST['city'];
-        $state=$_POST['slist'];
-        $Pincode=$_POST['Pincode'];
-        $mobile=$_POST['mnumber'];
-        $email=$_POST['emailField'];
-        $cemail=$_POST['cemail'];
- include 'db_confiq.php';  
-// Create connection
-$conn = mysqli_connect($servername, $username, $password, $database);
-
-// Check connection
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-} else{
-
-$sql = "UPDATE INTO `joining` (`id`, `Name`, `Gender`, `DOB`, `Father`, `Mother`, `Marital`, `Physically`, `Community`, `Qualification`, `Addline1`, `Addline2`, `Addline3`, `City`, `State`, `Pincode`, `Mobile`, `Email`, `Submitdate`) VALUES (NULL, '$name', '$gender', '$date', '$fname','$mname', '$Marital', '$physically', '$community', '$qualification ', '$addline1', '$addline2', '$addline3', '$city', '$state', '$Pincode', '$mobile', '$email', CURRENT_TIMESTAMP)";
-$result=mysqli_query($conn, $sql);
-if ($result) {
-    global  $addmsg;
-    $addmsg=true;
-// This function will return a random 
-// string of specified length 
-function random_strings($length_of_string) { 
-      global $name;
-    // md5 the timestamps and returns substring 
-    // of specified length 
-    return substr(md5($name), 0, $length_of_string); 
-} 
-  
-// This function will generate  
-// Random string of length 10 
-    $token= random_strings(10); 
- 
-  
-}
 
    
-   
 
-  mysqli_close($conn);
-    
-}
+
+if(isset($_POST['edit'])){ 
+    header("Location:edit.php");
+
+
+
 
 }
 ?>
@@ -106,45 +59,48 @@ function random_strings($length_of_string) {
 
     <div class="form1">
         <?php
-               if($msg){
-                echo "<p style=' color:red;
-                font-size: 15px;
-                margin-left: 42%;'> Email id already exists !!!</p>";
-
-            }
-            elseif($addmsg){
-                
-                include 'db_confiq.php';  
-                // Create connection
-                $conn = mysqli_connect($servername, $username, $password, $database);
-                if (!$conn) {
-                    die("Connection failed: " . mysqli_connect_error());
-                } else{
+             if (isset($_POST['Save'])) 
+             {
+                session_unset(); 
+                session_destroy();
+                 function random_strings($length_of_string) { 
+                     global $name;
+                   // md5 the timestamps and returns substring 
+                   // of specified length 
+                   return substr(md5($name), 0, $length_of_string); 
+                 } 
+                 
+                 // This function will generate  
+                 // Random string of length 10 
+                   $token= random_strings(10); 
+             
+                 $to_email =  $emailid;
+                 $subject = "Welcome to Upsc Registration";
+                 $body = "Hi $name Your Login ID -: $emailid and password is:- $token" ;
+                 $headers = "From: azad";
+             
+                 if (mail($to_email, $subject, $body, $headers)) {
+                     echo "<p style=' color:green;
+                     font-size: 15px;
+                     margin-left: 35%;'> Application is submited successfully. plese check your Email id:- $emailid <br>
+                     </p>" ;
                     
-                    $sql = "INSERT INTO `user_login` (`Username`, `Password`, `Time`) VALUES ('$email', '$token', CURRENT_TIMESTAMP)";                           
-                    $result=mysqli_query($conn, $sql);
-                    if($result){
-                      
+                     include 'db_confiq.php';  
+                     // Create connection
+                     $conn = mysqli_connect($servername, $username, $password, $database);
+                     if ($conn) 
+                       { $sql = "INSERT INTO `user_login` (`Username`, `Password`, `Time`) VALUES ('$emailid', '$token', CURRENT_TIMESTAMP)";                           
+                         $result=mysqli_query($conn, $sql);
                      
-                    
-                        $to_email =  $email;
-                        $subject = "Welcome to Upsc Registration";
-                        $body = "Hi $name Your Login ID -:  $email and password is:- $token" ;
-                        $headers = "From: azad";
-
-                        if (mail($to_email, $subject, $body, $headers)) {
-                            echo "<p style=' color:green;
-                            font-size: 15px;
-                            margin-left: 35%;'> Application is submited successfully. plese check your Email id:- $email <br>
-                            </p>" ;
-                            } else {
-                                echo "Email sending failed..."; }
-
-                            }}}
-
+                     }else{
+                       echo  "Connection failed: " . mysqli_connect_error();}
+             
+                     
+                 
+                    }}
     
-      ?>
-        <form id="text" action="form.php" method="post">
+    else{ ?>
+        <form id="text" action="confrom.php" method="post">
           <?php 
           
           require 'db_confiq.php';
@@ -282,9 +238,9 @@ function random_strings($length_of_string) {
 
 
                 <tr>
-                    <td><input type="submit" vaule="Confrom details" id="okButton" 
-                            style="margin-left:50%; margin-bottom:10px; margin-top:10px;" /> <input type="button" Value="Edit">
-  <?php  }}?>  </form> 
+                    <td><input type="submit" vaule="Confrom details" name="Save" id="okButton" 
+                            style="margin-left:50%; margin-bottom:10px; margin-top:10px;" /> <input type="submit" Value="Edit" name="edit">
+  <?php  }}}?>  </form> 
     </div>
  
 

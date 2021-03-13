@@ -1,11 +1,6 @@
 <?php
-session_start();
-$emailid=$_SESSION["emailField"];
-    if(!isset($_SESSION["emailField"])){ 
-            header("Location:form.php");
-   
-    }
-$update=false;
+$msg=false;
+$addmsg=false;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') 
 {
       $name= $_POST['uname'];
@@ -25,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
         $Pincode=$_POST['Pincode'];
         $mobile=$_POST['mnumber'];
         $email=$_POST['emailField'];
-      
+        $cemail=$_POST['cemail'];
  include 'db_confiq.php';  
 // Create connection
 $conn = mysqli_connect($servername, $username, $password, $database);
@@ -35,19 +30,40 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 } else{
 
-$update=true;
+$sql = "INSERT INTO `joining` (`id`, `Name`, `Gender`, `DOB`, `Father`, `Mother`, `Marital`, `Physically`, `Community`, `Qualification`, `Addline1`, `Addline2`, `Addline3`, `City`, `State`, `Pincode`, `Mobile`, `Email`, `Submitdate`) VALUES (NULL, '$name', '$gender', '$date', '$fname','$mname', '$Marital', '$physically', '$community', '$qualification ', '$addline1', '$addline2', '$addline3', '$city', '$state', '$Pincode', '$mobile', '$email', CURRENT_TIMESTAMP)";
+$result=mysqli_query($conn, $sql);
+if ($result) {
+    global  $addmsg;
+    $addmsg=true;
+ 
 // This function will return a random 
 // string of specified length 
 function random_strings($length_of_string) { 
-    global $name;
-  // md5 the timestamps and returns substring 
-  // of specified length 
-  return substr(md5($name), 0, $length_of_string); 
+      global $name;
+    // md5 the timestamps and returns substring 
+    // of specified length 
+    return substr(md5($name), 0, $length_of_string); 
 } 
-
+  
 // This function will generate  
 // Random string of length 10 
-  $token= random_strings(10); 
+    $token= random_strings(10); 
+ 
+  
+}
+
+   
+   
+   
+   else {
+    $duplicate = mysqli_error($conn);
+        if($duplicate=="Duplicate entry '$email' for key 'Email'"){
+            global $msg;
+            $msg=true;      
+        }
+  } 
+  mysqli_close($conn);
+    
 }
 
 }
@@ -89,118 +105,99 @@ function random_strings($length_of_string) {
     <h5 class="bord" > <strong><center>Part-1 Registration</center> </strong></h5>
 
     <div class="form1">
-    <?php 
-          
-          require 'db_confiq.php';
-          $sql = "SELECT * FROM `joining` WHERE `Email`='$emailid'";
-          $disply = mysqli_query($conn, $sql);
-      
-          if($disply){
-          while ($row = mysqli_fetch_array($disply)) {
-            $disid=$row['id'];
-
-            if($update){
-            $sql1 = "UPDATE `joining` SET `Name` = '$name', `Gender`='$gender',`DOB`='$date', `Father`='$fname', `Mother` = '$mname',`Marital`='$Marital',`Physically`='$physically',`Community`='$community',`Qualification`='$qualification',`Addline1`='$addline1',`Addline2`='$addline2',`Addline3`='$addline3',`City`='$city',`State`='$state',`Pincode`='$Pincode',`Mobile`='$mobile',`Email`='$email',`Submitdate`= CURRENT_TIMESTAMP WHERE `joining`.`id` ='$disid'";
-
-$result=mysqli_query($conn, $sql1);
-    $sql = "INSERT INTO `user_login` (`Username`, `Password`, `Time`) VALUES ('$email', '$token', CURRENT_TIMESTAMP)";                           
-    $resul=mysqli_query($conn, $sql);
-    if($resul){
-       
-    
-        $to_email =  $email;
-        $subject = "Welcome to Upsc Registration";
-        $body = "Hi $name Your Login ID -:  $email and password is:- $token" ;
-        $headers = "From: azad";
-
-        if (mail($to_email, $subject, $body, $headers)) {
-            echo "<p style=' color:green;
-            font-size: 15px;
-            margin-left: 35%;'> Application is submited successfully. plese check your Email id:- $email <br>
-            </p>" ;
-            
-        session_unset(); 
-        session_destroy(); 
-     
-            } else {
-                echo "Email sending failed..."; }
+        <?php
+               if($msg){
+                echo "<p style=' color:red;
+                font-size: 15px;
+                margin-left: 42%;'> Email id already exists !!!</p>";
 
             }
+            elseif($addmsg){
+                
+                include 'db_confiq.php';  
+                // Create connection
+                $conn = mysqli_connect($servername, $username, $password, $database);
+                if (!$conn) {
+                    die("Connection failed: " . mysqli_connect_error());
+                } else{
+                    
+                    session_start();
+                    $_SESSION["emailField"] = $email;
+                    $_SESSION["login_time_stamp"] = time();   
+                  
+                      
+                        header("Location: confrom.php");
+                               
 
-   
-  
-    else{
+                   
+                   
+                        }}
 
-        echo "faild to update";
-    }} mysqli_close($conn);
-         
-            ?>
-  <form id='text' action='edit.php' method='post'>
-          
-
-
-        
-          <strong>
+    
+      ?>
+        <form id="text" action="form.php" method="post">
+            <strong>
                 <p id="ph"> Personal Details </p>
             </strong>
             <table>
                 <tr>
-
                     <td><b>Name</b>
-                        <input type = "text" name="uname" value="<?php echo $row['Name'];?> "style=" margin-left: 455px;  width:420px;"  >
-                        
+                        <input type="text" name="uname" style=" margin-left: 455px;  width:420px;" required>
+                        <p class="red1"><u>Note:</u> Name should be same as document.<br>
+                            <u>Note:</u> Please do not use any prefix such Mr. or Ms etc.
+                        </p>
                     </td>
                 </tr>
                 <tr style="margin-bottom:10px;">
                     <td><b>Gender</b>
-                        <SELECT id="fill"   name='gender'>
-                        <OPTION Value="Male">Male</OPTION>
+                        <SELECT id="fill" name='gender'>
+                            <OPTION Value="Male">Male</OPTION>
                             <OPTION Value="Female">Female</OPTION>
                             <OPTION Value="Other">Other</OPTION>
-                            </SELECT>
+                        </SELECT>
                     </td>
                 </tr>
                 <tr id="fill">
-                    <td> <b>Date Of Birth</b> 
-                    <input type="date" name="date" style=" margin-left: 417px;">  
+                    <td> <b>Date Of Birth</b> <input type="date" name="date" style=" margin-left: 417px;">
+                        <p class="red1"><u> Note: </u> (Date Of Birth as recorded in Marticulation/Seccoundry Examnation
+                            Certificate.)</p>
                     </td>
                 </tr>
                 <tr>
                     <td> <b>Father Name's </b> <input type="text" name='fname'
-                    value="<?php echo $row['Father'];?> "    style=" margin-left: 413px;  width:420px;" required>
-                       
+                            style=" margin-left: 413px;  width:420px;" required>
+                        <p class="red1"><u> Note: </u> Do not use prefix such Shri or Mr etc. </p>
+                    </td>
                 </tr>
                 <tr>
                     <td> <b>Mother Name's </b> <input type="text" name='mname'
-                    value="<?php echo $row['Mother'];?> "           style=" margin-left: 408px;  width:420px;" required>
-                        
+                            style=" margin-left: 405px;  width:420px;" required>
+                        <p class="red1"><u> Note: </u> Do not use prefix such Smt or Mrs etc. </p>
                     </td>
                 </tr>
 
                 <tr>
                     <td><b>Marital Status</b>
-                        <select name="Marital"  style=" margin-left: 413px;">
-                        <option value="">--Select Marital--</option>
+                        <select name="Marital" style=" margin-left: 413px;">
+                            <option value="">--Select Marital--</option>
                             <option value="Married">Married</option>
                             <option value="Unmarried">Unmarried</option>
-                            
                         </select>
                     </td>
                 </tr>
                 <tr>
                     <td><b>Physically Changed :</b>
-                        <select name="Physically"   style=" margin-left: 377px;">
-                        <option value="Yes">Yes</option>
+                        <select name="Physically" style=" margin-left: 377px;">
+                            <option value="Yes">Yes</option>
                             <option value="No">No</option>
                     </td>
                 </tr>
                 <tr>
                     <td><b>Community :</b>
-                        <select name="Community"   style=" margin-left: 417px; margin-bottom:10px;">
-                        <option value="Gerenal">Gerenal</option>
-                            <option value="OBC">OBC</option>
-                            <option value="SC/ST">SC/ST</option> 
-                          
+                        <select name="Community" style=" margin-left: 417px; margin-bottom:10px;">
+                            <option value="Yes">Gerenal</option>
+                            <option value="No">OBC</option>
+                            <option value="No">SC/ST</option>
                     </td>
                 </tr>
             </table>
@@ -210,13 +207,12 @@ $result=mysqli_query($conn, $sql1);
             <table>
                 <tr>
                     <td><b>Select Your Educational Qualification :</b>
-                        <select name="Qualification"   style=" margin-left: 275px; margin-bottom:10px;">
-                        <option value="">--Select Your Qualification--</option>
+                        <select name="Qualification" style=" margin-left: 275px; margin-bottom:10px;">
+                            <option value="">--Select Your Qualification--</option>
                             <option value="10th">10th</option>
                             <option value="10+2">10+2</option>
                             <option value="Grauation">Grauation</option>
                             <option value="Post Grauation ">Post Grauation </option>
-                        
                     </td>
                 </tr>
             </table>
@@ -225,28 +221,29 @@ $result=mysqli_query($conn, $sql1);
             </strong>
             <table>
 
-              
+                <p class="red" style="margin-bottom:2px; margin-left: 500px;"><u> Note: </u> Do not enter your name
+                    again in address flieds. </p>
                 </td>
                 <tr>
                     <td><b>Line 1:</b>
-                        <input type="text"   value="<?php echo $row['Addline1'];?> "    name='line1' style=" margin-left: 458px;  width:420px;" required>
+                        <input type="text" name='line1' style=" margin-left: 458px;  width:420px;" required>
                     </td>
                 </tr>
                 <tr>
                     <td><b>Line 2:</b>
-                        <input type="text"  value="<?php echo $row['Addline2'];?> "     name='line2' style=" margin-left: 458px;   width:420px;" required>
+                        <input type="text" name='line2' style=" margin-left: 458px;   width:420px;" required>
                     </td>
                 </tr>
 
                 <tr>
                     <td><b>Line 3:</b>
-                        <input type="text"  value="<?php echo $row['Addline3'];?> "     name='line3' style=" margin-left: 458px;   width:420px;" required>
+                        <input type="text" name='line3' style=" margin-left: 458px;   width:420px;" required>
                     </td>
                 </tr>
 
                 <tr>
                     <td><b>State/UT :</b>
-                    <script>
+                        <script>
                         var states = new Array();
                         states['India'] = new Array('Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar',
                             'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
@@ -266,40 +263,64 @@ $result=mysqli_query($conn, $sql1);
                             }
                         }
                         </script>
-                        <select name=slist   id="state" style=" margin-left: 438px;">
-                        <option value=""></option>
+
+                        <select name=slist id="state" style=" margin-left: 438px;">
+                            <option value=""></option>
                         </select>
                 <tr>
                     <td><b>District/City:</b>
-                        <input type="text"  value="<?php echo $row['City'];?> "     name='city' style=" margin-left: 422px;   width:420px;" required>
+                        <input type="text" name='city' style=" margin-left: 422px;   width:420px;" required>
                     </td>
                 </tr>
                 <tr>
                     <td><b>Pincode:</b>
-                        <input type="text" value="<?php echo $row['Pincode'];?> "     name='Pincode' style=" font-size: 12px; margin-left: 447px;  width:80px; "
+                        <input type="text" name='Pincode' style=" font-size: 12px; margin-left: 447px;  width:80px; "
                             required>
                     </td>
                 </tr>
 
                 <tr>
                     <td><b>Mobile No:</b>
-                        <input type="tel" value="<?php echo $row['Mobile'];?> "     name='mnumber' style=" font-size: 12px; margin-left: 433px;  width:150px; "
+                        <input type="tel" name='mnumber' style=" font-size: 12px; margin-left: 433px;  width:150px; "
                             required>
                     </td>
                 </tr>
                 <tr>
                     <td><b>Email id:</b>
-                        <input type="text"  value="<?php echo $row['Email'];?> "     id="emailField" name='emailField' pattern="^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
+                        <input type="text" id="emailField" name='emailField' pattern="^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
                             style=" font-size: 12px; margin-left: 446px;  width:420px; " placeholder="Enter Email id"
                             required>
 
 
                 <tr>
-                    <td><input type="submit" vaule="Confrom details" id="okButton" 
-                            style="margin-left:50%; margin-bottom:10px; margin-top:10px;" /> 
-  <?php  }}?>  </form> 
+                    <td><b> Confirm Email id:</b>
+                        <input type="text" id="cemail" name='cemail' pattern="^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
+                            style=" font-size: 12px; margin-left: 395px;  width:420px; " required>
+                <tr>
+                    <td><input type="submit" vaule="Submit" id="okButton" disabled
+                            style="margin-left:50%; margin-bottom:10px; margin-top:10px;" /> <input type="reset">
+        </form>
     </div>
- 
+    <script>
+    const signUpForm = document.getElementById('text');
+    var emailField = document.getElementById('emailField');
+    const okButton = document.getElementById('okButton');
+    var cemail = document.getElementById('cemail');
+    emailField.addEventListener('keyup', testpassword2);
+    cemail.addEventListener('keyup', testpassword2);
+
+    function testpassword2() {
+        if (emailField.value == cemail.value) {
+            okButton.disabled = false;
+        } else {
+            okButton.disabled = true;
+        }
+    };
+
+    okButton.addEventListener('click', function(event) {
+        signUpForm.submit();
+    });
+    </script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
