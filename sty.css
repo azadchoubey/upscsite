@@ -140,18 +140,19 @@
        margin-left: 20%;
       
       }.buttom{
+        margin-top: 20px;
         background-color:rgb(56, 7, 121);
         padding: 10px;
         margin-left: 20%;
         color: #CCC;
         width:200px;
-        margin-bottom: 55px;
+        margin-bottom: 65px;
         text-transform:5px;
       }
       .countair{
         border: 1px solid rgb(221, 50, 50);
         margin-left: 900px;
-        margin-right:55px;
+        margin-right:95px;
         margin-top: 55px;
      
       }

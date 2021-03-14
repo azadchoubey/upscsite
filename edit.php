@@ -6,7 +6,7 @@ $emailid=$_SESSION["emailField"];
    
     }
 $update=false;
-if ($_SERVER['REQUEST_METHOD'] == 'POST') 
+if (isset($_POST['editbtn'])) 
 {
       $name= $_POST['uname'];
       $gender=$_POST['gender'];
@@ -134,7 +134,7 @@ $result=mysqli_query($conn, $sql1);
         echo "faild to update";
     }} mysqli_close($conn);
          
-            ?>
+   if(!$update) { ?>
   <form id='text' action='edit.php' method='post'>
           
 
@@ -295,10 +295,10 @@ $result=mysqli_query($conn, $sql1);
 
 
                 <tr>
-                    <td><input type="submit" vaule="Confrom details" id="okButton" 
+                    <td><input type="submit" vaule="Confrom details" id="okButton" name="editbtn"
                             style="margin-left:50%; margin-bottom:10px; margin-top:10px;" /> 
-  <?php  }}?>  </form> 
-    </div>
+ </form> 
+    </div>  <?php  }}}?> 
  
 
     <!-- Optional JavaScript -->
